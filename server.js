@@ -10,11 +10,21 @@ const port = process.env.PORT || 3000; // localement, on continue à avoir local
 // mais sur Render, c'est l'hébergeur qui fournit le port à utiliser via la variable PORT, 
 // et l'application devient compatible avec les 2 environnements (local+github)
 /* Un route de test avec une simple phrase
-// app.get("/", function (requete, reponse) {   // quand le navigateur fait une requète HTTP
+//app.get("/", function (requete, reponse) {   // quand le navigateur fait une requète HTTP
 // GET/, Express exécute cette fonction et renvoie une réponse --> principe du routage Express
 //  reponse.send("API Portfolio Rivo opérationnelle"); // ici, l'api renvoie une page html avec une phrase
 //});
 */
+
+// par défaut, garde cette API test pour montrer que le route "/" existe bien et contient
+// les données, mais ensuite il faut utiliser la vraie route "api/publications"
+// cette API test n'est nécessaire, mais reste propre pour nous dissuader à chaque 
+// fois si on voit une page vide pour les données du projet et nous persuader que 
+// le serveur est bel et bien actif
+app.get("/", function (requete, reponse) {   // quand le navigateur fait une requète HTTP
+// GET/, Express exécute cette fonction et renvoie une réponse --> principe du routage Express
+  reponse.send("API Portfolio Rivo opérationnelle"); // ici, l'api renvoie une page html avec une phrase
+});
 
 app.get("/api/publications", function(requete,reponse){
 // Ici, on définit maintenant une route test de publications
