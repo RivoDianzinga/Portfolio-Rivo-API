@@ -5,7 +5,10 @@ const publications = require("./data/publications.json"); // chargement des donn
 //console.log(publications); // affiche dans le terminal
 const app = express(); // on créé l'application serveur
 app.use(cors()); // function CORS qui autorise toutes les origines
-const port = 3000;     // définition du port
+//const port = 3000;     // définition du port pour le localhost c-à-d mon pc
+const port = process.env.PORT || 3000; // localement, on continue à avoir localhost : 3000
+// mais sur Render, c'est l'hébergeur qui fournit le port à utiliser via la variable PORT, 
+// et l'application devient compatible avec les 2 environnements (local+github)
 /* Un route de test avec une simple phrase
 // app.get("/", function (requete, reponse) {   // quand le navigateur fait une requète HTTP
 // GET/, Express exécute cette fonction et renvoie une réponse --> principe du routage Express
