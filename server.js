@@ -27,7 +27,7 @@ app.get("/", function (requete, reponse) {   // quand le navigateur fait une req
   reponse.send("API Portfolio Rivo opérationnelle"); // ici, l'api renvoie une page html avec une phrase
 });
 
-app.get("/api/publications", function(requete,reponse){
+//app.get("/api/publications", function(requete,reponse){
 // Ici, on définit maintenant une route test de publications
 /*  
   const publications = [
@@ -44,8 +44,27 @@ app.get("/api/publications", function(requete,reponse){
   ];
 */
 // Ici, on utilise maintenant les vraies données des publications
-  reponse.json(publications); // ici, l'api renvoie des données json (après les avoir chargées depuis le fichier des données json)
+//  reponse.json(publications); // ici, l'api renvoie des données json (après les avoir chargées depuis le fichier des données json)
+//});
+/* Après la route test de publications, on la remplace par une route provenant de la 
+base de doonées PostgreSQL, ci-dessous
+*/
+app.get("/api/publications", function(requete, reponse) {
+    pool.query("SELECT id, authors, title, journal, volume, number, pages, year, doi FROM publications ORDER BY year ASC")
+    .then(function(resultat) {
+        reponse.json(resultat.rows);
+    })
+    .catch(function(erreur) {
+        console.error(
+            "Erreur lors de la lecture des publications PostgreSQL :",
+            erreur
+        );
+        reponse.status(500).json({
+            error: "Impossible de charger les publications"
+        });
+    });
 });
+//
 app.listen(port, function () { // le serveur reste à l'écoute du port
   console.log("Serveur démarré sur http://localhost:" + port);
   console.log("Publications : http://localhost:" + port + "/api/publications");
