@@ -1,7 +1,7 @@
 const express = require("express"); // on charge Express
 const cors = require("cors"); // on charge le middleware CORS permettant d'activer le partage
 // des ressources entre différents origines, notamment entre le front-end et le back-end
-const publications = require("./data/publications.json"); // chargement des données publications depuis son fichier
+//const publications = require("./data/publications.json"); // chargement des données publications depuis son fichier
 //console.log(publications); // affiche dans le terminal
 const pool = require("./db");
 const app = express(); // on créé l'application serveur
@@ -17,7 +17,7 @@ const port = process.env.PORT || 3000; // localement, on continue à avoir local
 //});
 */
 
-// par défaut, garde cette API test pour montrer que le route "/" existe bien et contient
+// par défaut, on garde cette API test pour montrer que le route "/" existe bien et contient
 // les données, mais ensuite il faut utiliser la vraie route "api/publications"
 // cette API test n'est nécessaire, mais reste propre pour nous dissuader à chaque 
 // fois si on voit une page vide pour les données du projet et nous persuader que 
@@ -47,7 +47,9 @@ app.get("/", function (requete, reponse) {   // quand le navigateur fait une req
 //  reponse.json(publications); // ici, l'api renvoie des données json (après les avoir chargées depuis le fichier des données json)
 //});
 /* Après la route test de publications, on la remplace par une route provenant de la 
-base de doonées PostgreSQL, ci-dessous
+base de doonées PostgreSQL, ci-dessous. Si tout marche bien, on devrait retrouver 
+la base de données sur une page de lien htttp://localhost:3000/api/publications en 
+ouvrant justement ce lien
 */
 app.get("/api/publications", function(requete, reponse) {
     pool.query("SELECT id, authors, title, journal, volume, number, pages, year, doi FROM publications ORDER BY year ASC")
@@ -69,7 +71,9 @@ app.listen(port, function () { // le serveur reste à l'écoute du port
   console.log("Serveur démarré sur http://localhost:" + port);
   console.log("Publications : http://localhost:" + port + "/api/publications");
 });
+
 /* Ajout temporaire d'une route pour tester la communication entre le back-end et PostgreSQL */
+/*
 app.get("/api/test-db", function(requete, reponse) {
     pool.query("SELECT current_database() AS database, NOW() AS server_time")
     .then(function(resultat) {
@@ -82,14 +86,17 @@ app.get("/api/test-db", function(requete, reponse) {
         });
     });
 });
+*/
 /* Ajout temporaire d'une route pour tester la comm entre le backend et PostgreSQL, 
 les données reposent sur la base de publications dans PostgreSQL */
-app.get("/api/publications-db", function(requete, reponse){
-  pool.query("SELECT id, authors, title, journal, volume, number, pages, year, doi FROM publications ORDER BY year ASC")
-/* Ici, pool.query() envoie réellement le SELECT à PostgreSQL. 
+
+//app.get("/api/publications-db", function(requete, reponse){
+//  pool.query("SELECT id, authors, title, journal, volume, number, pages, year, doi FROM publications ORDER BY year ASC")
+  /* Ici, pool.query() envoie réellement le SELECT à PostgreSQL. 
 Quand la requête réussit, node-postgres place les lignes retournées dans resultat.rows, 
 et chaque ligne devient par défaut un objet JavaScript avec les noms de colonnes comme propriétés.
 */
+/*
   .then(function(resultat){
     reponse.json(resultat.rows);
   })
@@ -99,3 +106,4 @@ et chaque ligne devient par défaut un objet JavaScript avec les noms de colonne
       error: "Impossible de charger les publications depuis PostgreSQL"});
   });
 });
+*/
