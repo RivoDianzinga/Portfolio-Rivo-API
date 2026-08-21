@@ -149,6 +149,65 @@ app.post("/api/admin/login", async function(requete, reponse) {
         });
     }
 });
+/*
+Après le app.post d'authentification et d'autorisation, ici on définit proprement 
+la fonction create, post, insert
+*/
+app.post(
+    "/api/publications",
+    verifierToken,
+    async function(requete, reponse) {
+        const {
+            id,
+            authors,
+            title,
+            journal,
+            volume,
+            number,
+            pages,
+            year,
+            doi
+        } = requete.body;
+        // Vérification minimale des données obligatoires
+        if (!id || !authors || !title || !year || !doi) {
+            return reponse.status(400).json({
+                error: "Données obligatoires manquantes"
+            });
+        }
+        try {
+            const resultat = await pool.query(
+                `INSERT INTO publications
+                (id, authors, title, journal, volume, number, pages, year, doi)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                RETURNING *`,
+                [
+                    id,
+                    authors,
+                    title,
+                    journal,
+                    volume,
+                    number,
+                    pages,
+                    year,
+                    doi
+                ]
+            );
+            reponse.status(201).json({
+                message: "Publication ajoutée avec succès",
+                publication: resultat.rows[0]
+            });
+        } catch (erreur) {
+            console.error(
+                "Erreur lors de l'ajout de la publication :",
+                erreur
+            );
+            reponse.status(500).json({
+                error: "Impossible d'ajouter la publication"
+            });
+        }
+    }
+);
+
 
 //app.get("/api/publications", function(requete,reponse){
 // Ici, on définit maintenant une route test de publications
