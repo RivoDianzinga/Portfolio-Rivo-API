@@ -35,10 +35,64 @@ app.get("/", function (requete, reponse) {   // quand le navigateur fait une req
 });
 
 /*
+Ici on définit la function d'autorisation, utile après l'authentification POST. Cette
+fonction se sert du token obtenu après l'authentification
+*/
+function verifierToken(requete, reponse, next) {
+    const autorisation = requete.headers.authorization;
+    // Aucun token envoyé
+    if (!autorisation || !autorisation.startsWith("Bearer ")) {
+        return reponse.status(401).json({
+            error: "Authentification requise"
+        });
+    }
+    // On récupère uniquement le token après "Bearer "
+    const token = autorisation.split(" ")[1];
+    try {
+        const donneesToken = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+        // Le token est valide, mais on vérifie aussi le rôle
+        if (donneesToken.role !== "admin") {
+            return reponse.status(403).json({
+                error: "Accès interdit"
+            });
+        }
+        // On conserve les informations du token dans la requête
+        requete.utilisateur = donneesToken;
+        // Autorisation de poursuivre vers la route
+        next(); // le controle de sécurité est réussi, on peut passer à l'étape suivante
+    } catch (erreur) {
+        return reponse.status(401).json({
+            error: "Token invalide ou expiré"
+        });
+    }
+}
+/*
+Petite route pour tester la fonction verifierToken sur un lien local, pour tester
+le mécanisme de sécurité et non la fonctionnalité CRUD....on doit ouvrir le lien 
+http://localhost:3000/api/admin/test
+*/
+app.get(
+    "/api/admin/test", // le lien de destination
+    verifierToken, // gardien 
+    function(requete, reponse) { // la véritable route
+        reponse.json({
+            message: "Accès administrateur autorisé"
+        });
+    }
+);
+
+/*
 Ici on définit la 1è route d'authentification POST /api/admin/login, l'API qui permet
 de poster, d'ajouter, d'insérer de nouvelles données de publications. Cette API est
 sécurisée, contrairement à l'API GET ci-dessous qui permet de lire publiquement 
 les données de publications.
+Ici on définit la route d'authentification POST /api/admin/login.
+Elle reçoit l'email et le mot de passe de l'administrateur,
+vérifie les identifiants puis renvoie un token JWT si
+l'authentification réussit.
 */
 app.post("/api/admin/login", async function(requete, reponse) { 
 // async signie que cette function va effectuer des opérations asynchrones
