@@ -36,7 +36,9 @@ app.get("/", function (requete, reponse) {   // quand le navigateur fait une req
 
 /*
 Ici on définit la function d'autorisation, utile après l'authentification POST. Cette
-fonction se sert du token obtenu après l'authentification
+fonction se sert du token obtenu après l'authentification, c'esgt la fonction gardin 
+sécurise et qui est appelée au début dans chacune des fonctions POST, PUT et DELETE
+car sont sécurisées
 */
 function verifierToken(requete, reponse, next) {
     const autorisation = requete.headers.authorization;
@@ -75,8 +77,8 @@ le mécanisme de sécurité et non la fonctionnalité CRUD....on doit ouvrir le 
 http://localhost:3000/api/admin/test
 */
 app.get(
-    "/api/admin/test", // le lien de destination
-    verifierToken, // gardien 
+    "/api/admin/test", // le lien de destination (POST, PUT, DELETE)
+    verifierToken, // gardien de la cybersécurité
     function(requete, reponse) { // la véritable route
         reponse.json({
             message: "Accès administrateur autorisé"
@@ -151,7 +153,13 @@ app.post("/api/admin/login", async function(requete, reponse) {
 });
 /*
 Après le app.post d'authentification et d'autorisation, ici on définit proprement 
-la fonction create, post, insert
+la fonction create, post, insert sécurisée...ne pas confondre le post d'authentification
+et le post de fonctionnalité crud. L'idée est de faire d'abord le post d'authentification, 
+et ensuite les fonctionnalités crud sécurisée post, put et delete.
+Remarquer dans cette route post, il y'a la fonction sql insert. et c'est justement 
+cette fonction insert qui fait le lien avec PostgreSQL.
+A partir de la route post javascript http, on parvient à controler la base de 
+données postgrsql, par la commande sql insert.
 */
 app.post(
     "/api/publications",
@@ -208,6 +216,79 @@ app.post(
     }
 );
 
+/*
+Ici on définit la fonction PUT sécurisée qui permet de modifier une publication 
+existante à partir de l'identifiant de cette publication.
+Remarquer dans cette route put, il y'a la fonction sql update. et c'est justement 
+cette fonction update qui fait le lien avec PostgreSQL.
+A partir de la route put javascript http, on parvient à controler la base de 
+données postgrsql, par la commande sql update.
+*/
+app.put(
+    "/api/publications/:id",
+    verifierToken,
+    async function(requete, reponse) {
+        const id = requete.params.id;
+        const {
+            authors,
+            title,
+            journal,
+            volume,
+            number,
+            pages,
+            year,
+            doi
+        } = requete.body;
+        if (!authors || !title || !year || !doi) {
+            return reponse.status(400).json({
+                error: "Données obligatoires manquantes"
+            });
+        }
+        try {
+            const resultat = await pool.query(
+                `UPDATE publications
+                 SET authors = $1,
+                     title = $2,
+                     journal = $3,
+                     volume = $4,
+                     number = $5,
+                     pages = $6,
+                     year = $7,
+                     doi = $8
+                 WHERE id = $9
+                 RETURNING *`,
+                [
+                    authors,
+                    title,
+                    journal,
+                    volume,
+                    number,
+                    pages,
+                    year,
+                    doi,
+                    id
+                ]
+            );
+            if (resultat.rows.length === 0) {
+                return reponse.status(404).json({
+                    error: "Publication introuvable"
+                });
+            }
+            reponse.json({
+                message: "Publication modifiée avec succès",
+                publication: resultat.rows[0]
+            });
+        } catch (erreur) {
+            console.error(
+                "Erreur lors de la modification de la publication :",
+                erreur
+            );
+            reponse.status(500).json({
+                error: "Impossible de modifier la publication"
+            });
+        }
+    }
+);
 
 //app.get("/api/publications", function(requete,reponse){
 // Ici, on définit maintenant une route test de publications
@@ -231,7 +312,11 @@ app.post(
 /* Après la route test de publications, on la remplace par une route provenant de la 
 base de doonées PostgreSQL, ci-dessous. Si tout marche bien, on devrait retrouver 
 la base de données sur une page de lien htttp://localhost:3000/api/publications en 
-ouvrant justement ce lien
+ouvrant justement ce lien.
+Remarquer dans cette route get, il y'a la fonction sql select. et c'est justement 
+cette fonction select qui fait le lien avec PostgreSQL.
+A partir de la route get javascript http, on parvient à controler la base de 
+données postgrsql, par la commande sql select.
 */
 app.get("/api/publications", function(requete, reponse) {
     pool.query("SELECT id, authors, title, journal, volume, number, pages, year, doi FROM publications ORDER BY year ASC")
