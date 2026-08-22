@@ -290,6 +290,47 @@ app.put(
     }
 );
 
+/*
+Ici on définit la fonction DELETE sécurisée qui permet de supprimer une publication 
+existante à partir de l'identifiant de cette publication.
+Remarquer dans cette route delete, il y'a la fonction sql delete. et c'est justement 
+cette fonction delete qui fait le lien avec PostgreSQL.
+A partir de la route delete javascript http, on parvient à controler la base de 
+données postgrsql, par la commande sql delete.
+*/
+app.delete(
+    "/api/publications/:id",
+    verifierToken,
+    async function(requete, reponse) {
+        const id = requete.params.id;
+        try {
+            const resultat = await pool.query(
+                `DELETE FROM publications
+                 WHERE id = $1
+                 RETURNING *`,
+                [id]
+            );
+            if (resultat.rows.length === 0) {
+                return reponse.status(404).json({
+                    error: "Publication introuvable"
+                });
+            }
+            reponse.json({
+                message: "Publication supprimée avec succès",
+                publication: resultat.rows[0]
+            });
+        } catch (erreur) {
+            console.error(
+                "Erreur lors de la suppression de la publication :",
+                erreur
+            );
+            reponse.status(500).json({
+                error: "Impossible de supprimer la publication"
+            });
+        }
+    }
+);
+
 //app.get("/api/publications", function(requete,reponse){
 // Ici, on définit maintenant une route test de publications
 /*  
