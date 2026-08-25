@@ -76,6 +76,7 @@ Petite route pour tester la fonction verifierToken sur un lien local, pour teste
 le mécanisme de sécurité et non la fonctionnalité CRUD....on doit ouvrir le lien 
 http://localhost:3000/api/admin/test
 */
+/*
 app.get(
     "/api/admin/test", // le lien de destination (POST, PUT, DELETE)
     verifierToken, // gardien de la cybersécurité
@@ -85,6 +86,7 @@ app.get(
         });
     }
 );
+*/
 
 /*
 Ici on définit la 1è route d'authentification POST /api/admin/login, l'API qui permet
@@ -94,7 +96,7 @@ les données de publications.
 Ici on définit la route d'authentification POST /api/admin/login.
 Elle reçoit l'email et le mot de passe de l'administrateur,
 vérifie les identifiants puis renvoie un token JWT si
-l'authentification réussit.
+l'authentification réussit. c'est la connexion admin
 */
 app.post("/api/admin/login", async function(requete, reponse) { 
 // async signie que cette function va effectuer des opérations asynchrones
@@ -160,6 +162,7 @@ Remarquer dans cette route post, il y'a la fonction sql insert. et c'est justeme
 cette fonction insert qui fait le lien avec PostgreSQL.
 A partir de la route post javascript http, on parvient à controler la base de 
 données postgrsql, par la commande sql insert.
+JWT obligatoire...
 */
 app.post(
     "/api/publications",
@@ -223,6 +226,7 @@ Remarquer dans cette route put, il y'a la fonction sql update. et c'est justemen
 cette fonction update qui fait le lien avec PostgreSQL.
 A partir de la route put javascript http, on parvient à controler la base de 
 données postgrsql, par la commande sql update.
+JWT obligatoire...
 */
 app.put(
     "/api/publications/:id",
@@ -297,6 +301,7 @@ Remarquer dans cette route delete, il y'a la fonction sql delete. et c'est juste
 cette fonction delete qui fait le lien avec PostgreSQL.
 A partir de la route delete javascript http, on parvient à controler la base de 
 données postgrsql, par la commande sql delete.
+JWT obligatoire...
 */
 app.delete(
     "/api/publications/:id",
@@ -358,6 +363,7 @@ Remarquer dans cette route get, il y'a la fonction sql select. et c'est justemen
 cette fonction select qui fait le lien avec PostgreSQL.
 A partir de la route get javascript http, on parvient à controler la base de 
 données postgrsql, par la commande sql select.
+Public...
 */
 app.get("/api/publications", function(requete, reponse) {
     pool.query("SELECT id, authors, title, journal, volume, number, pages, year, doi FROM publications ORDER BY year ASC")
